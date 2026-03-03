@@ -29,6 +29,7 @@ export interface Category {
   icon: string;
   image: string;
   productCount: number;
+  order?: number;
 }
 
 export interface Banner {
@@ -125,7 +126,9 @@ export function useCategories() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'categories'), snap => {
-      setCategories(snap.docs.map(d => ({ id: d.id, ...d.data() } as Category)));
+      const cats = snap.docs.map(d => ({ id: d.id, ...d.data() } as Category));
+      cats.sort((a, b) => (a.order ?? 999) - (b.order ?? 999));
+      setCategories(cats);
       setLoading(false);
     }, () => setLoading(false));
     return unsub;

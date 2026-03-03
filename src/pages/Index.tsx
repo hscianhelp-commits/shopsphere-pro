@@ -37,7 +37,7 @@ export default function Index() {
                 <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentBanner * 100}%)` }}>
                   {banners.map(banner => (
                     <Link key={banner.id} to={banner.link || '/'} className="block shrink-0 w-full">
-                      <img src={banner.image} alt="" className="w-full h-32 sm:h-36 lg:h-72 object-cover" />
+                      <img src={banner.image} alt="" className="w-full h-44 sm:h-52 lg:h-[340px] object-cover" />
                     </Link>
                   ))}
                 </div>
@@ -50,7 +50,7 @@ export default function Index() {
                 )}
               </div>
             ) : (
-              <div className="bg-muted rounded-2xl h-32 sm:h-36 lg:h-72 flex items-center justify-center text-muted-foreground">
+              <div className="bg-muted rounded-2xl h-44 sm:h-52 lg:h-[340px] flex items-center justify-center text-muted-foreground">
                 <Package size={40} className="opacity-30" />
               </div>
             )}
@@ -58,7 +58,7 @@ export default function Index() {
 
           {/* Category scroll (desktop: vertical, mobile: hidden here, shown below) */}
           <div className="hidden lg:block">
-            <div className="bg-card border border-border rounded-2xl p-4 h-72 overflow-y-auto">
+            <div className="bg-card border border-border rounded-2xl p-4 h-[340px] overflow-y-auto">
               <h3 className="font-bold text-sm mb-3">Categories</h3>
               <div className="space-y-2">
                 {cLoading ? Array.from({ length: 6 }).map((_, i) => <div key={i} className="skeleton h-10 rounded-xl" />) :
