@@ -1,20 +1,31 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Menu, X, LogOut, User, Package, Settings, HeadphonesIcon, Star, SlidersHorizontal } from 'lucide-react';
+import { Search, ShoppingCart, Menu, X, LogOut, User, Package, SlidersHorizontal, Star, ChevronDown } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useProducts, useSettings } from '@/hooks/useFirestoreData';
+import { useProducts, useCategories, useSettings } from '@/hooks/useFirestoreData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const SORT_OPTIONS = [
+  { value: 'popular', label: 'Popularity' },
+  { value: 'price_asc', label: 'Price: Low → High' },
+  { value: 'price_desc', label: 'Price: High → Low' },
+  { value: 'rating', label: 'Rating' },
+  { value: 'newest', label: 'Newest' },
+];
 
 export default function Header() {
   const { itemCount } = useCart();
   const { user, userData, logout } = useAuth();
   const { settings } = useSettings();
   const { products } = useProducts();
+  const { categories } = useCategories();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +33,16 @@ export default function Header() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
+
+  // Filter state
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 50000]);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
+  const [minRating, setMinRating] = useState(0);
+  const [sort, setSort] = useState('popular');
+  const [showFilterResults, setShowFilterResults] = useState(false);
+
+  const brands = [...new Set(products.map(p => p.brand).filter(Boolean))];
 
   const placeholderText = products.length > 0
     ? `Search "${products[placeholderIndex % products.length]?.name?.slice(0, 25)}..."`
@@ -60,15 +81,42 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Apply filters and show results
+  const filteredProducts = products
+    .filter(p => !searchQuery || p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || p.brand?.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
+    .filter(p => selectedBrands.length === 0 || selectedBrands.includes(p.brand))
+    .filter(p => (p.rating || 0) >= minRating)
+    .sort((a, b) => {
+      if (sort === 'price_asc') return a.price - b.price;
+      if (sort === 'price_desc') return b.price - a.price;
+      if (sort === 'rating') return (b.rating || 0) - (a.rating || 0);
+      return (b.sold || 0) - (a.sold || 0);
+    });
+
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const q = searchQuery.trim() || products[placeholderIndex % products.length]?.name || '';
-    if (q) {
-      navigate(`/search?q=${encodeURIComponent(q)}`);
+    if (searchQuery.trim()) {
+      setShowFilterResults(true);
       setShowSuggestions(false);
-      setSearchQuery('');
     }
   };
+
+  const handleApplyFilters = () => {
+    setFilterOpen(false);
+    setShowFilterResults(true);
+  };
+
+  const handleClearFilters = () => {
+    setPriceRange([0, 50000]);
+    setSelectedBrands([]);
+    setMinRating(0);
+    setSort('popular');
+    setSearchQuery('');
+    setShowFilterResults(false);
+  };
+
+  const toggleBrand = (brand: string) => setSelectedBrands(prev => prev.includes(brand) ? prev.filter(b => b !== brand) : [...prev, brand]);
 
   const SuggestionsDropdown = () => (
     showSuggestions && suggestions.length > 0 ? (
@@ -81,6 +129,65 @@ export default function Header() {
         ))}
       </div>
     ) : null
+  );
+
+  const FilterDropdownContent = () => (
+    <div className="space-y-4 p-1">
+      {/* Sort */}
+      <div>
+        <h4 className="text-xs font-semibold text-muted-foreground mb-2">Sort By</h4>
+        <div className="flex flex-wrap gap-1.5">
+          {SORT_OPTIONS.map(o => (
+            <button key={o.value} onClick={() => setSort(o.value)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${sort === o.value ? 'bg-primary text-primary-foreground' : 'bg-muted hover:bg-muted/80'}`}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Price Range */}
+      <div>
+        <h4 className="text-xs font-semibold text-muted-foreground mb-2">Price Range</h4>
+        <div className="flex gap-2 mb-2">
+          <Input type="number" placeholder="Min" value={priceRange[0]} onChange={e => setPriceRange([+e.target.value, priceRange[1]])} className="h-8 text-xs" />
+          <span className="self-center text-muted-foreground text-xs">—</span>
+          <Input type="number" placeholder="Max" value={priceRange[1]} onChange={e => setPriceRange([priceRange[0], +e.target.value])} className="h-8 text-xs" />
+        </div>
+        <Slider value={priceRange} min={0} max={50000} step={100} onValueChange={setPriceRange} />
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-1"><span>৳{priceRange[0]}</span><span>৳{priceRange[1]}</span></div>
+      </div>
+      {/* Brands */}
+      {brands.length > 0 && (
+        <div>
+          <h4 className="text-xs font-semibold text-muted-foreground mb-2">Brand</h4>
+          <div className="max-h-28 overflow-y-auto space-y-1.5">
+            {brands.map(brand => (
+              <label key={brand} className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={selectedBrands.includes(brand)} onChange={() => toggleBrand(brand)} className="rounded" />
+                <span className="text-xs">{brand}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Rating */}
+      <div>
+        <h4 className="text-xs font-semibold text-muted-foreground mb-2">Min Rating</h4>
+        <div className="flex gap-1.5">
+          {[0, 3, 4, 4.5].map(r => (
+            <button key={r} onClick={() => setMinRating(r)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${minRating === r ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+              {r === 0 ? 'All' : `${r}+`}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
+        <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={handleClearFilters}>Clear</Button>
+        <Button size="sm" className="flex-1 h-8 text-xs" onClick={handleApplyFilters}>Apply ({filteredProducts.length})</Button>
+      </div>
+    </div>
   );
 
   const PointsBadge = () => {
@@ -129,9 +236,16 @@ export default function Header() {
             <button type="submit" className="h-9 px-3 rounded-xl bg-primary text-primary-foreground text-xs font-semibold shrink-0">
               <Search size={14} />
             </button>
-            <button type="button" onClick={() => navigate('/search')} className="h-9 w-9 rounded-xl border border-border bg-card flex items-center justify-center shrink-0">
-              <SlidersHorizontal size={14} className="text-muted-foreground" />
-            </button>
+            <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+              <PopoverTrigger asChild>
+                <button type="button" className="h-9 w-9 rounded-xl border border-border bg-card flex items-center justify-center shrink-0">
+                  <SlidersHorizontal size={14} className="text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto">
+                <FilterDropdownContent />
+              </PopoverContent>
+            </Popover>
           </form>
         </div>
 
@@ -148,9 +262,16 @@ export default function Header() {
                 <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} onFocus={() => suggestions.length > 0 && setShowSuggestions(true)} placeholder={placeholderText} className="pl-9 rounded-xl bg-muted border-0" />
               </div>
               <Button type="submit" size="sm" className="h-10 px-4 rounded-xl">Search</Button>
-              <button type="button" onClick={() => navigate('/search')} className="h-10 w-10 rounded-xl border border-border bg-card flex items-center justify-center shrink-0 hover:bg-muted transition-colors">
-                <SlidersHorizontal size={14} className="text-muted-foreground" />
-              </button>
+              <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+                <PopoverTrigger asChild>
+                  <button type="button" className="h-10 w-10 rounded-xl border border-border bg-card flex items-center justify-center shrink-0 hover:bg-muted transition-colors">
+                    <SlidersHorizontal size={14} className="text-muted-foreground" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 max-h-[70vh] overflow-y-auto">
+                  <FilterDropdownContent />
+                </PopoverContent>
+              </Popover>
             </form>
             <SuggestionsDropdown />
           </div>
@@ -189,6 +310,47 @@ export default function Header() {
           </div>
         </div>
       </header>
+
+      {/* Filter Results Overlay */}
+      <AnimatePresence>
+        {showFilterResults && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="fixed inset-0 z-30 bg-background pt-[120px] lg:pt-[80px] overflow-y-auto pb-24">
+            <div className="max-w-screen-xl mx-auto px-4">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-medium text-muted-foreground">{filteredProducts.length} results {searchQuery && `for "${searchQuery}"`}</p>
+                <Button variant="ghost" size="sm" onClick={() => { setShowFilterResults(false); setSearchQuery(''); }} className="gap-1 text-xs">
+                  <X size={14} /> Close
+                </Button>
+              </div>
+              {filteredProducts.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {filteredProducts.map(product => (
+                    <div key={product.id} onClick={() => setShowFilterResults(false)}>
+                      <Link to={`/product/${product.id}`} className="flex flex-col h-full bg-card rounded-xl overflow-hidden border border-border/60">
+                        <div className="relative aspect-[4/3] overflow-hidden">
+                          <img src={product.images?.[0] || '/placeholder.svg'} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+                        </div>
+                        <div className="p-2.5">
+                          <p className="text-xs text-muted-foreground">{product.brand}</p>
+                          <h3 className="text-sm font-medium line-clamp-1">{product.name}</h3>
+                          <p className="font-bold text-sm mt-1">৳{product.price?.toFixed(0)}</p>
+                        </div>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <Package size={40} className="mx-auto mb-3 text-muted-foreground opacity-30" />
+                  <h3 className="font-bold mb-1">No products found</h3>
+                  <p className="text-muted-foreground text-sm">Try adjusting your filters</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile Menu Drawer */}
       <AnimatePresence>

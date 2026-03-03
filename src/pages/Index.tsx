@@ -37,7 +37,7 @@ export default function Index() {
                 <div className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentBanner * 100}%)` }}>
                   {banners.map(banner => (
                     <Link key={banner.id} to={banner.link || '/'} className="block shrink-0 w-full">
-                      <img src={banner.image} alt="" className="w-full h-32 sm:h-36 lg:h-72 object-cover" />
+                      <img src={banner.image} alt="" className="w-full h-40 sm:h-48 lg:h-72 object-cover" />
                     </Link>
                   ))}
                 </div>
@@ -50,7 +50,7 @@ export default function Index() {
                 )}
               </div>
             ) : (
-              <div className="bg-muted rounded-2xl h-32 sm:h-36 lg:h-72 flex items-center justify-center text-muted-foreground">
+              <div className="bg-muted rounded-2xl h-40 sm:h-48 lg:h-72 flex items-center justify-center text-muted-foreground">
                 <Package size={40} className="opacity-30" />
               </div>
             )}
@@ -86,11 +86,11 @@ export default function Index() {
           {cLoading
             ? Array.from({ length: 6 }).map((_, i) => <CategorySkeleton key={i} />)
             : categories.map(cat => (
-              <Link key={cat.id} to={`/category/${cat.id}`} className="flex flex-col items-center gap-1.5 shrink-0">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-muted border border-border/50">
+              <Link key={cat.id} to={`/category/${cat.id}`} className="flex flex-col items-center gap-2 shrink-0">
+                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-muted border border-border/50">
                   <img src={cat.image} alt={cat.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
-                <span className="text-[11px] font-medium text-center w-16 truncate">{cat.name}</span>
+                <span className="text-[11px] font-medium text-center w-18 truncate">{cat.name}</span>
               </Link>
             ))
           }
@@ -102,7 +102,7 @@ export default function Index() {
         <section className="mt-6 px-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2"><Zap size={18} className="text-accent fill-accent" /><h2 className="font-bold text-base">Flash Deals</h2></div>
-            <Link to="/search?sort=discount" className="text-primary text-sm font-medium flex items-center gap-1">View all <ChevronRight size={14} /></Link>
+            <Link to="/category" className="text-primary text-sm font-medium flex items-center gap-1">View all <ChevronRight size={14} /></Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {flashDeals.map(product => <ProductCard key={product.id} product={product} />)}
@@ -115,7 +115,7 @@ export default function Index() {
         <section className="mt-6 px-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2"><TrendingUp size={18} className="text-primary" /><h2 className="font-bold text-base">Featured Products</h2></div>
-            <Link to="/search" className="text-primary text-sm font-medium flex items-center gap-1">View all <ChevronRight size={14} /></Link>
+            <Link to="/category" className="text-primary text-sm font-medium flex items-center gap-1">View all <ChevronRight size={14} /></Link>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {featured.map(product => <ProductCard key={product.id} product={product} />)}
@@ -156,7 +156,7 @@ export default function Index() {
             <h4 className="font-semibold text-foreground mb-2">Quick Links</h4>
             <ul className="space-y-1.5 text-xs">
               <li><Link to="/category" className="hover:text-primary transition-colors">Categories</Link></li>
-              <li><Link to="/search" className="hover:text-primary transition-colors">Deals</Link></li>
+              <li><Link to="/category" className="hover:text-primary transition-colors">Deals</Link></li>
               <li><Link to="/orders" className="hover:text-primary transition-colors">Track Order</Link></li>
             </ul>
           </div>

@@ -17,7 +17,7 @@ import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderSuccessPage from "./pages/OrderSuccessPage";
 import OrderTrackingPage from "./pages/OrderTrackingPage";
-import SearchPage from "./pages/SearchPage";
+// SearchPage removed - filters now in header dropdown
 import CategoryPage from "./pages/CategoryPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
@@ -64,7 +64,7 @@ function AppRoutes() {
       <Route path="/checkout" element={<UserLayout><CheckoutPage /></UserLayout>} />
       <Route path="/order-success" element={<OrderSuccessPage />} />
       <Route path="/orders" element={<UserLayout><OrderTrackingPage /></UserLayout>} />
-      <Route path="/search" element={<UserLayout><SearchPage /></UserLayout>} />
+      {/* Search route removed - filters in header */}
       <Route path="/category" element={<UserLayout><CategoryPage /></UserLayout>} />
       <Route path="/category/:id" element={<UserLayout><CategoryPage /></UserLayout>} />
       <Route path="/profile" element={<UserLayout><ProfilePage /></UserLayout>} />
