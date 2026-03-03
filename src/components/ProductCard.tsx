@@ -29,7 +29,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <motion.div whileHover={{ y: -2 }} className="group h-full">
       <Link to={`/product/${product.id}`} className="flex flex-col h-full bg-card rounded-xl overflow-hidden border border-border/60 card-hover">
-        <div className="relative aspect-[4/5] overflow-hidden">
+        <div className="relative aspect-square overflow-hidden">
           <img src={product.images?.[0] || '/placeholder.svg'} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
           {discount && discount > 0 && (
             <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-[11px] font-bold px-1.5 py-0.5 rounded-md">-{discount}%</span>
@@ -38,9 +38,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="absolute bottom-2 left-2 bg-accent text-accent-foreground text-[10px] font-semibold px-1.5 py-0.5 rounded-md">Only {product.stock} left</span>
           )}
         </div>
-        <div className="p-2.5 flex flex-col flex-1">
-          <p className="text-[11px] text-muted-foreground mb-0.5">{product.brand}</p>
-          <h3 className="text-[13px] font-medium line-clamp-2 mb-1.5 flex-1 leading-tight">{product.name}</h3>
+        <div className="p-3 flex flex-col flex-1">
+          <p className="text-xs text-muted-foreground mb-0.5">{product.brand}</p>
+          <h3 className="text-sm font-medium line-clamp-2 mb-2 flex-1">{product.name}</h3>
           <div className="flex items-center gap-1 mb-2">
             <Star size={11} className="fill-accent text-accent" />
             <span className="text-xs font-medium">{product.rating || 0}</span>

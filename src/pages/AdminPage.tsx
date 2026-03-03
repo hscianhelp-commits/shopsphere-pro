@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useProducts, useCategories, useBanners, useCoupons, useAllOrders, useAllUsers, useSettings, addProduct, updateProduct, deleteProduct, addCategory, updateCategory, deleteCategory, addBanner, updateBanner, deleteBanner, addCoupon, updateCoupon, deleteCoupon, updateOrderStatus, updateSettings, Product, Category, Banner, Coupon } from '@/hooks/useFirestoreData';
 import { uploadImageToImgBB } from '@/lib/imgbb';
 import { useAuth } from '@/contexts/AuthContext';
-import { Package, Users, Tag, TrendingUp, Edit, Trash2, Plus, Save, X, Ticket, Menu, LayoutDashboard, ImageIcon, BadgePercent, ClipboardList, UserCog, Cog, DollarSign, Clock, ExternalLink, ChevronDown, ChevronUp, Eye, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
+import { Package, Users, Tag, TrendingUp, Edit, Trash2, Plus, Save, X, Ticket, Menu, LayoutDashboard, ImageIcon, BadgePercent, ClipboardList, UserCog, Cog, DollarSign, Clock, ExternalLink, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -90,22 +90,11 @@ export default function AdminPage() {
   const saveCategory = async () => {
     setSaving(true);
     try {
-      const data = { name: form.name || '', icon: form.icon || '', image: form.image || '', productCount: Number(form.productCount) || 0, sortOrder: Number(form.sortOrder) ?? categories.length };
+      const data = { name: form.name || '', icon: form.icon || '', image: form.image || '', productCount: Number(form.productCount) || 0 };
       if (dialog?.item?.id) await updateCategory(dialog.item.id, data);
-      else await addCategory({ ...data, sortOrder: categories.length });
+      else await addCategory(data);
       closeDialog();
     } finally { setSaving(false); }
-  };
-
-  const moveCategoryOrder = async (catId: string, direction: 'up' | 'down') => {
-    const idx = categories.findIndex(c => c.id === catId);
-    if (idx < 0) return;
-    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= categories.length) return;
-    const cat = categories[idx];
-    const swapCat = categories[swapIdx];
-    await updateCategory(cat.id, { sortOrder: swapIdx });
-    await updateCategory(swapCat.id, { sortOrder: idx });
   };
 
   const saveBanner = async () => {
@@ -260,19 +249,11 @@ export default function AdminPage() {
               <h2 className="font-bold text-xl">{categories.length} Categories</h2>
               <Button size="sm" className="h-8 gap-1 text-xs" onClick={() => openDialog('category')}><Plus size={12} /> Add</Button>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">↕ ক্যাটাগরি সিরিয়াল পরিবর্তন করতে তীর চিহ্ন ব্যবহার করুন</p>
-            <div className="space-y-2">
-              {categories.map((cat, idx) => (
+            <div className="grid grid-cols-2 gap-3">
+              {categories.map(cat => (
                 <div key={cat.id} className="flex items-center gap-3 bg-card border border-border rounded-xl p-3">
-                  <div className="flex flex-col gap-0.5">
-                    <button onClick={() => moveCategoryOrder(cat.id, 'up')} disabled={idx === 0} className="p-0.5 hover:bg-muted rounded disabled:opacity-20"><ArrowUp size={12} /></button>
-                    <button onClick={() => moveCategoryOrder(cat.id, 'down')} disabled={idx === categories.length - 1} className="p-0.5 hover:bg-muted rounded disabled:opacity-20"><ArrowDown size={12} /></button>
-                  </div>
                   <img src={cat.image || '/placeholder.svg'} alt={cat.name} className="w-10 h-10 rounded-lg object-cover" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{cat.name}</p>
-                    <p className="text-[10px] text-muted-foreground">Order: {cat.sortOrder ?? idx}</p>
-                  </div>
+                  <div className="flex-1 min-w-0"><p className="text-sm font-medium">{cat.name}</p></div>
                   <button onClick={() => openDialog('category', cat)} className="p-1.5 hover:bg-muted rounded-lg"><Edit size={13} /></button>
                   <button onClick={() => deleteCategory(cat.id)} className="p-1.5 hover:bg-destructive/10 rounded-lg text-destructive"><Trash2 size={13} /></button>
                 </div>
