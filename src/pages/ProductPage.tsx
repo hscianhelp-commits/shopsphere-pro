@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductCard from '@/components/ProductCard';
 import { motion, AnimatePresence } from 'framer-motion';
+import SocialShareButtons from '@/components/SocialShareButtons';
 
 const staticReviews = [
   { id: 'r1', userName: 'Rahim A.', rating: 5, comment: 'অসাধারণ পণ্য! খুবই সন্তুষ্ট।', date: '2025-01-15', helpful: 12 },
