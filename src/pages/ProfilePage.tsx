@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User, MapPin, Package, Gift, Settings, Star, Copy, Check, ExternalLink, Clock, Shield, FileText, RotateCcw, Save, Ticket, Share2, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import SocialShareButtons from '@/components/SocialShareButtons';
 
 export default function ProfilePage() {
   const { user, userData, logout, refreshUserData } = useAuth();
