@@ -85,7 +85,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleShareOnSocial = (text: string, url: string) => ({ text, url });
+  
 
   const handleBindReferral = async () => {
     setReferralErr(''); setReferralMsg('');
