@@ -85,52 +85,7 @@ export default function ProfilePage() {
     }
   };
 
-  const shareOnSocial = (platform: string) => {
-    const text = `${settings.appName} - সেরা অনলাইন শপিং অভিজ্ঞতা!`;
-    const encodedText = encodeURIComponent(text + ' ' + referralLink);
-    const encodedUrl = encodeURIComponent(referralLink);
-
-    // Deep link (opens native app) → fallback (opens web)
-    const urls: Record<string, { deep: string; fallback: string }> = {
-      facebook: {
-        deep: `fb://share/?link=${encodedUrl}`,
-        fallback: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-      },
-      whatsapp: {
-        deep: `whatsapp://send?text=${encodedText}`,
-        fallback: `https://api.whatsapp.com/send?text=${encodedText}`,
-      },
-      twitter: {
-        deep: `twitter://post?message=${encodedText}`,
-        fallback: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodedUrl}`,
-      },
-      linkedin: {
-        deep: `linkedin://sharing/share-offsite/?url=${encodedUrl}`,
-        fallback: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
-      },
-    };
-
-    const target = urls[platform];
-    if (!target) return;
-
-    // Try deep link first; if app isn't installed, fallback after timeout
-    const start = Date.now();
-    const fallbackTimer = setTimeout(() => {
-      // If we're still on page (app didn't open), use fallback
-      if (Date.now() - start < 2000) {
-        window.open(target.fallback, '_blank', 'noopener,noreferrer');
-      }
-    }, 800);
-
-    window.location.href = target.deep;
-
-    // If app opens, clear fallback
-    const handleBlur = () => {
-      clearTimeout(fallbackTimer);
-      window.removeEventListener('blur', handleBlur);
-    };
-    window.addEventListener('blur', handleBlur);
-  };
+  const handleShareOnSocial = (text: string, url: string) => ({ text, url });
 
   const handleBindReferral = async () => {
     setReferralErr(''); setReferralMsg('');
